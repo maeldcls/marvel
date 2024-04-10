@@ -14,9 +14,16 @@
         <label for="description">Description :</label><br>
         <textarea id="description" name="description" rows="4" cols="50"></textarea><br><br>
         
-        {{! <label for="photo">Photo :</label>
-        <input type="file" id="photo" name="photo" accept="image/*"><br><br> }}
-        
+        <label for="photo">Photo :</label>
+        <input type="file" id="photo" name="photo" accept="image/*"><br><br>
+
+        <label for="equipe">Equipe</label>
+        <select name="equipe">
+            <option value=""></option>
+            {{#equipe}}
+                <option value="{{id}}">{{ nom }}</option>
+            {{/equipe}}
+        </select>
         <input type="submit" value="Ajouter">
     </form>
 </body>

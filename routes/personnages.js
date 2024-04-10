@@ -1,6 +1,9 @@
-const express = require('express');
+const express = require("express");
+const multer = require("multer");
+//const upload = multer({ dest: "public/img" });
 const router = express.Router();
-const multer  = require('multer')
+
+router.use(express.json());
 
 const connection = require('../database');
 
@@ -29,32 +32,74 @@ router.get('/', (req, res) => {
 });
 
 router.get('/create', (req,res)=>{
-  res.render('create', { pageTitle: 'Créer un personnage'})
+  connection.query('SELECT * FROM equipes', (error, results, fields) => {
+    if (error) {
+      console.error('Erreur lors de la récupération des personnages : ', error);
+      res.status(500).send('Erreur lors de la récupération des personnages');
+      return;
+    }
+
+    res.render('create', { pageTitle: 'Créer un personnage',equipe: results})
+  });
+  
 })
 
-router.post('/create', (req, res) => {
-  const { name, description } = req.body;
-  console.log(req.body)
-
-   //res.send(`Nom: ${name}, Description: ${description}`);
+// Middleware de gestion des erreurs de Multer
+router.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    console.error('Erreur Multer :', error);
+    res.status(500).send('Une erreur est survenue lors du téléversement du fichier.');
+  } else {
+    next(error);
+  }
 });
 
-router.get('/testformulaire', (req, res) => {
-  res.render('testformulaire')
+router.post('/create', upload.single("photo"), (req, res) => {
+  let { name, description, equipe } = req.body;
+  let fileName = ""; 
+  
+  if(req.file) {
+    fileName = req.file.filename; 
+    console.log(fileName);
+  }
+
+  if(!equipe){
+    equipe=null;
+  }
+
+  connection.query('INSERT INTO personnages (nom,description,photo,equipe_id) VALUES (?,?,?,?)'
+  , [name,description,fileName,equipe], (error, results, fields) => {
+    if (error) {
+      console.error('Erreur lors de la création d\'un personnage : ', error);
+      return;
+    }
+
+    res.redirect('/personnages');
+  });
+
 });
 
-router.post('/testtraitement', (req, res) => {
-  console.log(req.body)
+router.post('/update', (req,res)=>{
+
+})
+
+
+
+router.get('/details/:id', (req, res) => {
+  // Récupérer la valeur de l'ID à partir des paramètres de l'URL
+  const id = req.params.id;
+
+  connection.query(`SELECT * FROM personnages WHERE id = ${id}`, (error, results, fields) => {
+    if (error) {
+      console.error('Erreur lors de la récupération des personnages : ', error);
+      res.status(500).send('Erreur lors de la récupération des personnages');
+      return;
+    }
+  console.log(results);
+    res.render('details', { pageTitle: 'Détails d\'un personnages', personnage: results[0] });
+  });
+
 });
-
-
-// router.get('/:id', (req, res) => {
-//   // Récupérer la valeur de l'ID à partir des paramètres de l'URL
-//   const id = req.params.id;
-
-//   // Envoyer la valeur de l'ID en réponse
-//   res.send(`ID: ${id}`);
-// });
 
 
 module.exports = router;

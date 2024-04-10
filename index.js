@@ -1,7 +1,7 @@
 const express = require("express");
 const mustacheExpress = require("mustache-express");
 const app = express();
-const bodyParser = require('body-parser');
+
 
 /**
  * Configuration de mustache
@@ -31,6 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 app.get("/", (req, res) => {
   res.render("index", { pageTitle: "Accueil" });
 });
+
 const personnagesRouter = require('./routes/personnages')
 app.use('/personnages', personnagesRouter)
 
